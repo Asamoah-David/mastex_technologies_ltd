@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env
+.env*.local
+npm-debug.log*
+.dockerignore
+.vscode
+.idea
+# Root design source (the deployable copy lives at public/logo.jpeg)
+Mastex Technologies Ltd.jpeg

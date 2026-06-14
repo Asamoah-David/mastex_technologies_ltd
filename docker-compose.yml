@@ -1,0 +1,44 @@
+# Local development stack: Postgres + the Next.js app.
+# Usage:
+#   docker compose up -d db          # just the database (recommended for dev)
+#   docker compose up --build        # full stack
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mastex-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mastex
+      POSTGRES_PASSWORD: mastex
+      POSTGRES_DB: mastex
+    ports:
+      - "5432:5432"
+    volumes:
+      - mastex-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mastex -d mastex"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: mastex-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://mastex:mastex@db:5432/mastex?schema=public
+      DIRECT_URL: postgresql://mastex:mastex@db:5432/mastex?schema=public
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-https://placeholder.supabase.co}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-placeholder}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-placeholder}
+      AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
+    ports:
+      - "3000:3000"
+
+volumes:
+  mastex-db-data:
